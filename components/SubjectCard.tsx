@@ -4,6 +4,7 @@ import Image from "next/image";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import { db } from "@/firebase/admin";
+import RatingDropdown from "@/components/RatingDropdown";
 
 interface SubjectCardProps {
     subjectId?: string;
@@ -95,9 +96,7 @@ const SubjectCard = async ({subjectId, subjectName, userId, finalized}: SubjectC
                         <Button asChild className="btn-primary max-sm:w-full">
                             <Link href="/">Add Review</Link>
                         </Button>
-                        <Button asChild className="btn-primary max-sm:w-full">
-                            <Link href="/">Add Rating</Link>
-                        </Button>
+                        <RatingDropdown/>
                     </div>
                 </div>
             </div>

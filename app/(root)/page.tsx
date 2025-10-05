@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button } from "@/components/ui/button";
-import Link from 'next/link';
+
+
 import {dummySubjects} from "@/constants";
 import SubjectCard from "@/components/SubjectCard";
 
@@ -20,7 +20,7 @@ const Page = () => {
                     <div className="interviews-section">
                         {
                             dummySubjects?.map((subject) => (
-                                <SubjectCard {...subject} />
+                                <SubjectCard  key={subject.id} {...subject} />
                             ))}
 
                         {/*<p>You haven&apos;t submitted any ratings or reviews yet</p>*/}

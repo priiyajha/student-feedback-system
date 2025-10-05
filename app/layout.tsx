@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
 import "./globals.css";
 import {Toaster} from "sonner";
+import QueryProvider from "@/components/QueryProvider";
 
 
 const monaSans = Mona_Sans({
@@ -20,6 +21,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
+        <QueryProvider>
         <html lang="en" className="dark">
         <body
             className={`${monaSans.className} antialiased pattern`}>
@@ -28,5 +30,6 @@ export default function RootLayout({
         <Toaster/>
         </body>
         </html>
+        </QueryProvider>
     );
 }
