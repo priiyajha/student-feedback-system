@@ -1,4 +1,6 @@
 import React from 'react'
+import { Button } from "@/components/ui/button";
+import Link from 'next/link';
 
 const Page = () => {
     return (
@@ -11,17 +13,11 @@ const Page = () => {
                     </p>
 
                 </div>
-
-            {/*</section>*/}
-
-            {/*<section className="flex flex-col gap-6 mt-8">*/}
-            {/*    <h2>Your Interviews</h2>*/}
+                <Button asChild className="btn-primary max-sm:w-full">
+                    <Link href="/">Submit your review</Link>
+                </Button>
 
 
-            {/*</section>*/}
-
-            {/*<section className="flex flex-col gap-6 mt-8">*/}
-            {/*    <h2>Take Interviews</h2>*/}
 
             </section>
         </>
