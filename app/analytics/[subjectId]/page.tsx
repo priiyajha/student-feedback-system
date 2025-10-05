@@ -14,6 +14,15 @@ interface AnalyticsData {
     distribution: { rating: number; count: number }[];
 }
 
+// --- MISSING INTERFACE ADDED ---
+interface Review {
+    id: string;
+    rating: number;
+    comment: string;
+    userId: string;
+    createdAt: string | null;
+}
+
 // --- Custom Tooltip Component (Prevents the Object-as-Child Error) ---
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -72,8 +81,8 @@ const AnalyticsPage = () => {
     const params = useParams();
     const subjectId = Array.isArray(params.subjectId) ? params.subjectId[0] : params.subjectId;
 
-    // Fetch analytics data using TanStack Query
-    const { data: analytics, isPending, isError } = useQuery<AnalyticsData>({
+    // --- 1. Fetch Analytics Data ---
+    const { data: analytics, isPending: isAnalyticsPending, isError: isAnalyticsError } = useQuery<AnalyticsData>({
         queryKey: ['subjectAnalytics', subjectId],
         queryFn: async () => {
             const res = await axios.get(`/api/analytics/${subjectId}`);
@@ -82,30 +91,78 @@ const AnalyticsPage = () => {
         enabled: !!subjectId,
     });
 
-    if (isPending) return <div className="text-center py-20 text-xl">Loading Analytics...</div>;
-    if (isError) return <div className="text-center py-20 text-red-500 text-xl">Error loading analytics. Check API route.</div>;
+    // --- 2. Fetch All Reviews ---
+    const { data: reviews, isPending: isReviewsPending, isError: isReviewsError } = useQuery<Review[]>({
+        queryKey: ['subjectReviews', subjectId],
+        queryFn: async () => {
+            const res = await axios.get(`/api/reviews/${subjectId}`);
+            return res.data;
+        },
+        enabled: !!subjectId,
+        staleTime: 60000,
+    });
+
+    // Determine the subject name from the ID (using a mapping object)
+    // --- FIX: Using Map for Subject Name and moving logic out of render flow ---
+    const subjectMap: Record<string, string> = {
+        '1': 'Data Structures & Algorithms (DSA)',
+        '2': 'Database Management Systems (DBMS)',
+        '3': 'Full Stack Development (FSD)',
+        '4': 'Object-Oriented Programming (OOP)'
+    };
+    const subjectName = subjectId ? subjectMap[subjectId] || 'Unknown Subject' : 'Subject';
+
+
+    if (isAnalyticsPending || isReviewsPending) return <div className="text-center py-20 text-xl">Loading Analytics...</div>;
+    if (isAnalyticsError || isReviewsError) return <div className="text-center py-20 text-red-500 text-xl">Error loading analytics. Check API route.</div>;
 
     if (!analytics || analytics.totalSubmissions === 0) {
         return (
-            <div className="text-center py-20">
-                <h1 className="text-2xl font-bold mb-4">Analytics for {subjectId}</h1>
-                <p className="text-gray-500">No feedback submitted for this subject yet.</p>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+                <div className="container mx-auto px-4 max-w-4xl">
+                    <h1 className="text-2xl font-bold mb-4">Analytics for {subjectName}</h1>
+                    <p className="text-gray-500">No feedback submitted for this subject yet.</p>
+                </div>
             </div>
         );
-    }
-    let subjectName;
-
-    {subjectId === '1'? subjectName='DSA':
-        subjectId==='2'? subjectName='DBMS':
-            subjectId==='3'? subjectName='FSD':
-                subjectId==='4'? subjectName='OOP':''
     }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
             <div className="container mx-auto px-4 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8">Analytics for {subjectName}</h1>
+
+                {/* Renders the Bar Chart for distribution */}
                 <RatingBarChart analytics={analytics} />
+
+                {/* --- Review List --- */}
+                <div className="mt-10">
+                    <h2 className="text-2xl font-bold mb-6">Recent Reviews ({reviews?.length || 0})</h2>
+
+                    <div className="space-y-4">
+                        {reviews && reviews.length > 0 ? (
+                            reviews.map((review) => (
+                                <div key={review.id} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="text-lg font-semibold text-yellow-500">
+                                            {review.rating} ⭐
+                                        </div>
+                                        {/* Display only a part of the user ID for privacy, if available */}
+                                        <span className="text-xs text-gray-500">User: {review.userId.substring(0, 8)}...</span>
+                                    </div>
+                                    {/* The main review comment text */}
+                                    <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
+                                    <p className="text-xs text-gray-400 mt-2">
+                                        {/* Format the creation date */}
+                                        Submitted: {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500">No text reviews found for this subject.</p>
+                        )}
+                    </div>
+                </div>
 
             </div>
         </div>

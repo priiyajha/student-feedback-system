@@ -1,51 +1,30 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { db } from '@/firebase/admin'; // Import your Firebase Admin SDK instance
+import { db } from '@/firebase/admin';
+import { NextResponse, NextRequest } from 'next/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // 1. Check HTTP Method
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
-    // 2. Extract Data from Request Body
-    const { subjectId, userId, comment } = req.body;
-
-    // 3. Basic Validation
-    if (!subjectId || !userId || !comment || comment.trim().length < 5) {
-        return res.status(400).json({
-            message: 'Invalid request: subject ID, user ID, and a comment of at least 5 characters are required.'
-        });
-    }
-
-    // 4. Secure Database Write (Using Firebase Admin SDK)
+export async function POST(request: NextRequest) {
     try {
-        // You can choose to store reviews in the 'feedback' collection or a separate 'reviews' collection.
-        // For simplicity, we'll use 'feedback' and ensure the required fields are set.
+        const { subjectId, userId, comment } = await request.json();
 
-        // Save the new review document
-        const newDoc = await db.collection('feedback').add({
+        if (!subjectId || !userId || !comment) {
+            return NextResponse.json(
+                { message: 'Missing subject ID, user ID, or comment.' },
+                { status: 400 }
+            );
+        }
+
+        // --- Save Data to Firestore ---
+        await db.collection('feedback').add({
             subjectId: subjectId,
             userId: userId,
             comment: comment,
-
-            // Since this is just a review, we set rating/score to null or 0.
-            // If you want to require a rating with every review, you would add 'rating' validation above.
-            rating: null,
-            totalScore: null,
-
+            // NOTE: Rating is often required, but for pure review submission, we omit it or set it to null.
+            // If you want to require both, the form needs to send both.
             createdAt: new Date(),
         });
 
-        // 5. Success Response
-        return res.status(200).json({
-            message: 'Review submitted successfully',
-            id: newDoc.id
-        });
-
+        return NextResponse.json({ message: 'Review submitted successfully' }, { status: 200 });
     } catch (error) {
         console.error('Firestore review submission error:', error);
-        // 6. Error Response
-        return res.status(500).json({ message: 'Failed to save review to database.' });
+        return NextResponse.json({ message: 'Failed to save review.' }, { status: 500 });
     }
 }

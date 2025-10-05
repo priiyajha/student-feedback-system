@@ -17,7 +17,6 @@ interface SubjectCardProps {
     finalized?: boolean;
 }
 
-// NOTE: AnalyticsData interface is now imported from '@/lib/data'
 
 const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) => {
 
@@ -28,12 +27,11 @@ const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) =
     let subjectAnalytics: AnalyticsData | null = null;
     let averageRatingDisplay = "---";
 
-    // --- 1. Fetch User's Specific Feedback (For form pre-population) ---
     if (isUserLoggedInAndSubjectValid) {
         userFeedback = await getUserFeedbackBySubjectId(subjectId!, userId!);
     }
 
-    // --- 2. Fetch Aggregated Subject Analytics (For public display) ---
+
     if (subjectId) {
         try {
             // DIRECTLY call the secure server function to get the calculated average
@@ -79,37 +77,32 @@ const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) =
                         </div>
                     </div>
 
-                    {/* Display the user's previously submitted text review */}
-                    <p className="line-clamp-2 mt-5 text-center text-gray-500 dark:text-gray-400">
-                        {userFeedback?.comment || "No personal review submitted yet."}
-                    </p>
+                         <div className="flex flex-col gap-5 mt-20 ">
+                             {/* 1. Review Form */}
+                             {isUserLoggedInAndSubjectValid ? (
+                                 <ReviewForm
+                                     subjectId={subjectId!}
+                                     userId={userId!}
+                                     // initialReview={userFeedback?.comment || ''} Pass initial review text for editing
+                                 />
+                             ) : (
+                                 <Button className="btn-primary max-sm:w-full" disabled>
+                                     Add Review (Sign In)
+                                 </Button>
+                             )}
 
-                    <div className="flex flex-row justify-between gap-5 mt-20 ">
-                        {/* 1. Review Form */}
-                        {isUserLoggedInAndSubjectValid ? (
-                            <ReviewForm
-                                subjectId={subjectId!}
-                                userId={userId!}
-                                // initialReview={userFeedback?.comment || ''} Pass initial review text for editing
-                            />
-                        ) : (
-                            <Button className="btn-primary max-sm:w-full" disabled>
-                                Add Review (Sign In)
-                            </Button>
-                        )}
-
-                        {/* 2. Rating Dropdown */}
-                        {isUserLoggedInAndSubjectValid ? (
-                            <RatingDropdown
-                                subjectId={subjectId!}
-                                userId={userId!}
-                            />
-                        ) : (
-                            <Button className="btn-primary max-sm:w-full" disabled>
-                                Add Rating (Sign In)
-                            </Button>
-                        )}
-                    </div>
+                             {/* 2. Rating Dropdown */}
+                             {isUserLoggedInAndSubjectValid ? (
+                                 <RatingDropdown
+                                     subjectId={subjectId!}
+                                     userId={userId!}
+                                 />
+                             ) : (
+                                 <Button className="btn-primary items-center max-sm:w-full" disabled>
+                                     Add Rating (Sign In)
+                                 </Button>
+                             )}
+                         </div>
                 </div>
             </div>
         </div>

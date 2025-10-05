@@ -6,8 +6,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { subjectId: string } }
 ) {
-    // ✅ FIX: Access the subjectId using direct destructuring from the argument,
-    // satisfying the compiler that the parameter is resolved.
+
     const { subjectId } = params;
 
     if (!subjectId) {
