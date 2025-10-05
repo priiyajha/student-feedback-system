@@ -1,10 +1,20 @@
-import React from 'react'
-
-
-import {dummySubjects} from "@/constants";
+import React from 'react';
 import SubjectCard from "@/components/SubjectCard";
+import { getCurrentUser } from '@/lib/actions/auth.action';
+import { getSubjects } from '@/lib/data'; // Import your server data fetching function
+import { dummySubjects } from "@/constants"; // Keep for now, but we will use getSubjects()
 
-const Page = () => {
+// 1. CONVERTED TO ASYNC SERVER COMPONENT
+const Page = async () => {
+
+    // 2. FETCH AUTHENTICATION AND DATA ON THE SERVER
+    const user = await getCurrentUser();
+    const currentUserId = user?.id; // Will be the UID or undefined/null
+
+    // 3. FETCH SUBJECTS
+    // NOTE: If getSubjects() is not implemented yet, use dummySubjects.
+    const subjects = getSubjects ? await getSubjects() : dummySubjects;
+
     return (
         <>
             <section className="card-cta flex flex-col justify-center items-center">
@@ -13,17 +23,19 @@ const Page = () => {
                     <p className="text-xl text-center my-10">
                         See real time feedbacks & get instant insights
                     </p>
-
                 </div>
                 <section className="flex flex-col gap-6 mt-8">
                     <h2>Your Subjects</h2>
                     <div className="interviews-section">
-                        {
-                            dummySubjects?.map((subject) => (
-                                <SubjectCard  key={subject.id} {...subject} />
-                            ))}
-
-                        {/*<p>You haven&apos;t submitted any ratings or reviews yet</p>*/}
+                        {/* 4. MAP OVER FETCHED SUBJECTS AND PASS USER ID */}
+                        {subjects?.map((subject) => (
+                            <SubjectCard
+                                key={subject.id}
+                                subjectId={subject.id} // Ensure you pass individual props, not spread
+                                subjectName={subject.subjectName}
+                                userId={currentUserId} // <-- THIS IS THE CRITICAL LINE
+                            />
+                        ))}
 
                     </div>
 

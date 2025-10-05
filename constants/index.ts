@@ -1,5 +1,3 @@
-
-
 export const dummySubjects: Subject[] = [
     {
         id: "1",
