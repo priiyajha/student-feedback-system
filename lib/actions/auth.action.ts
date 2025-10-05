@@ -1,23 +1,5 @@
 "use server";
 
-interface SignInParams {
-    email: string;
-    idToken: string;
-}
-
-interface SignUpParams {
-    uid: string;
-    name: string;
-    email: string;
-    password: string;
-}
-interface User {
-    name: string;
-    email: string;
-    id: string;
-}
-
-
 import { auth, db } from "@/firebase/admin";
 
 import { cookies } from "next/headers";
@@ -135,7 +117,7 @@ export async function getCurrentUser(): Promise<User | null> {
         return {
             ...userRecord.data(),
             id: userRecord.id,
-        } as User; 
+        } as User;
     } catch (error) {
         console.log(error);
 

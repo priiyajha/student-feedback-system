@@ -6,23 +6,7 @@ import Link from "next/link";
 import { db } from "@/firebase/admin";
 import RatingDropdown from "@/components/RatingDropdown";
 
-interface SubjectCardProps {
-    subjectId?: string;
-    subjectName?: string;
-    userId?: string;
-    finalized?: boolean;
-}
 
-interface Feedback {
-    id: string;
-    subjectId: string;
-    totalScore: number;
-}
-
-interface GetFeedbackBySubjectIdParams {
-    subjectId: string;
-    userId: string;
-}
 
 export async function getFeedbackBySubjectId(
     params: GetFeedbackBySubjectIdParams
@@ -61,28 +45,22 @@ const SubjectCard = async ({subjectId, subjectName, userId, finalized}: SubjectC
             <div className="card-interview ">
                 <div className="grid grid-cols-1 gap-6">
 
-                    {/* Cover Image */}
-                    {/*<Image*/}
-                    {/*    src={getRandomInterviewCover()}*/}
-                    {/*    alt="cover-image"*/}
-                    {/*    width={90}*/}
-                    {/*    height={90}*/}
-                    {/*    className="rounded-full object-fit size-[90px]"*/}
-                    {/*/>*/}
 
-                    {/* Interview Role */}
-                    <h3 className="mt-5 capitalize">{subjectName}</h3>
+
+                    <h3 className="mt-5 items-center capitalize">{subjectName}</h3>
 
                     {/* Date & Score */}
-                    <div className="flex flex-row gap-5 mt-3">
-                        <div className="flex flex-row gap-2">
-
-                        </div>
-
-                        <div className="flex flex-row gap-2 items-center">
+                    <div className="flex flex-col gap-5 mt-3 justify-center items-center">
+                        <div className="flex  gap-2 items-center">
                             {/*<Image src="star.svg" width={22} height={22} alt="star" />*/}
                             <Image src="/star.svg" alt="star" width={22} height={22} />
                             <p>{feedback?.totalScore || "---"}/5</p>
+                        </div>
+
+                        <div className="flex  gap-2">
+                            <Button asChild className="btn-primary max-sm:w-full">
+                                <Link href="/">Check other Reviews</Link>
+                            </Button>
                         </div>
                     </div>
 
@@ -96,7 +74,20 @@ const SubjectCard = async ({subjectId, subjectName, userId, finalized}: SubjectC
                         <Button asChild className="btn-primary max-sm:w-full">
                             <Link href="/">Add Review</Link>
                         </Button>
-                        <RatingDropdown/>
+                        {/*<RatingDropdown/>*/}
+
+                        {subjectId && userId ? (
+                            // Case 1: If both IDs are present, render the interactive dropdown
+                            <RatingDropdown
+                                subjectId={subjectId}
+                                userId={userId}
+                            />
+                        ) : (
+                            // Case 2: If IDs are missing (user is logged out), render a disabled button
+                            <Button className="btn-primary max-sm:w-full" disabled>
+                                Add Rating (Login Req)
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,9 +1,3 @@
-interface Subject {
-    id: string;
-    subjectName: string;
-    userId: string;
-    finalized: boolean;
-}
 
 
 export const dummySubjects: Subject[] = [
