@@ -2,7 +2,9 @@ import React from 'react';
 import SubjectCard from "@/components/SubjectCard";
 import { getCurrentUser } from '@/lib/actions/auth.action';
 import { getSubjects } from '@/lib/data'; // Import your server data fetching function
-import { dummySubjects } from "@/constants"; // Keep for now, but we will use getSubjects()
+import { dummySubjects } from "@/constants";
+import Link from "next/link";
+import {Button} from "@/components/ui/button"; // Keep for now, but we will use getSubjects()
 
 // 1. CONVERTED TO ASYNC SERVER COMPONENT
 const Page = async () => {
@@ -32,14 +34,16 @@ const Page = async () => {
                             <SubjectCard
                                 key={subject.id}
                                 subjectId={subject.id} // Ensure you pass individual props, not spread
-                                subjectName={subject.subjectName}
+                                subjectName={subject.name ||subject.subjectName}
                                 userId={currentUserId} // <-- THIS IS THE CRITICAL LINE
                             />
+
                         ))}
-
                     </div>
-
                 </section>
+                <Button asChild className="btn-primary w-full mt-20">
+                    <Link href="/admin">Admin Panel</Link>
+                </Button>
             </section>
         </>
     )

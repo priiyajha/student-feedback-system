@@ -17,8 +17,6 @@ export async function POST(request: NextRequest) {
             subjectId: subjectId,
             userId: userId,
             comment: comment,
-            // NOTE: Rating is often required, but for pure review submission, we omit it or set it to null.
-            // If you want to require both, the form needs to send both.
             createdAt: new Date(),
         });
 

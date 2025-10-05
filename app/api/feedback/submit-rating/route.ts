@@ -12,11 +12,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if a rating already exists for this subject/user pair (optional: update instead of add)
-        // For simplicity here, we add a new one, but you might want to check for an existing document
-        // and update it instead of adding a duplicate rating document.
-
-        // Write the new rating document to the 'feedback' collection
         await db.collection('feedback').add({
             subjectId: subjectId,
             userId: userId,

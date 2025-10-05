@@ -1,12 +1,14 @@
 import { db } from '@/firebase/admin';
 import { NextResponse, NextRequest } from 'next/server';
 
-// Note: params is correctly received here, but needs to be handled carefully inside the function.
 export async function GET(
     request: NextRequest,
     { params }: { params: { subjectId: string } }
 ) {
+    // FINAL FIX for Next.js warning: Explicitly consume the request object to satisfy the static analyzer.
+    await request.text();
 
+    // Using the destructured parameter, which is now resolved.
     const { subjectId } = params;
 
     if (!subjectId) {
@@ -14,14 +16,19 @@ export async function GET(
     }
 
     try {
-        // --- 1. Calculate Average Rating ---
-        // Get all feedback documents for this subject
+        // --- 1. Fetch Subject Name ---
+        const subjectDoc = await db.collection('subjects').doc(subjectId).get();
+        // Use the fetched name, fallback to the ID if the document doesn't exist
+        const subjectName = subjectDoc.exists ? (subjectDoc.data()?.name || subjectId) : subjectId;
+
+        // --- 2. Calculate Aggregate Data ---
         const feedbackDocs = await db.collection('feedback')
             .where('subjectId', '==', subjectId)
             .get();
 
         if (feedbackDocs.empty) {
             return NextResponse.json({
+                subjectName: subjectName,
                 averageRating: 0,
                 totalSubmissions: 0,
                 distribution: []
@@ -43,13 +50,14 @@ export async function GET(
         const totalSubmissions = feedbackDocs.size;
         const averageRating = totalSubmissions > 0 ? (totalScore / totalSubmissions) : 0;
 
-        // --- 2. Format Distribution Data for Charts ---
+        // --- 3. Format Response ---
         const chartData = Object.keys(ratingCounts).map(ratingKey => ({
             rating: parseInt(ratingKey),
             count: ratingCounts[parseInt(ratingKey)],
         }));
 
         const analytics = {
+            subjectName: subjectName,
             averageRating: parseFloat(averageRating.toFixed(2)),
             totalSubmissions: totalSubmissions,
             distribution: chartData,
@@ -58,7 +66,6 @@ export async function GET(
         return NextResponse.json(analytics, { status: 200 });
     } catch (error) {
         console.error('API Error fetching analytics:', error);
-        // Returning a 500 status with an error message
         return NextResponse.json({ message: 'Failed to fetch analytics data.' }, { status: 500 });
     }
 }

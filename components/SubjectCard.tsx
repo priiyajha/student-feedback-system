@@ -9,7 +9,6 @@ import RatingDropdown from './RatingDropdown';
 import { getUserFeedbackBySubjectId, getSubjectAnalytics, UserFeedback, AnalyticsData } from '@/lib/data';
 import 'server-only';
 
-
 interface SubjectCardProps {
     subjectId?: string;
     subjectName?: string;
@@ -49,6 +48,7 @@ const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) =
     }
 
     return (
+        <>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 h-full
         flex flex-row justify-center items-center">
             <div className="card-interview ">
@@ -106,6 +106,7 @@ const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) =
                 </div>
             </div>
         </div>
+    </>
     )
 }
 export default SubjectCard;

@@ -5,8 +5,10 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { subjectId: string } }
 ) {
-    // FINAL FIX: Explicitly consume the request object to satisfy the Next.js static analyzer.
+    // FINAL FIX for Next.js warning: Explicitly consume the request object to satisfy the static analyzer.
     await request.text();
+
+    // Using the destructured parameter, which is now resolved.
     const { subjectId } = params;
 
     if (!subjectId) {
@@ -14,13 +16,16 @@ export async function GET(
     }
 
     try {
-
-        const reviewsSnapshot = await db.collection('feedback')
+        // --- 1. Fetch Reviews ---
+        let query = db.collection('feedback')
             .where('subjectId', '==', subjectId)
-            .where('comment', '!=', '') // Filter out documents where comment is empty string
-            .orderBy('comment')           // Firestore requires ordering by the field used in != filter
-            .orderBy('createdAt', 'desc')
-            .get();
+            // Filter only documents with a non-empty text review
+            .where('comment', '!=', '')
+            .orderBy('comment') // Required for the != filter
+            .orderBy('createdAt', 'desc');
+
+        // NOTE: If you get a FAILED_PRECONDITION error, you must create the index in Firebase.
+        const reviewsSnapshot = await query.get();
 
         if (reviewsSnapshot.empty) {
             return NextResponse.json([]);
@@ -30,19 +35,51 @@ export async function GET(
             const data = doc.data();
             return {
                 id: doc.id,
+                userId: data.userId,
                 rating: data.rating,
                 comment: data.comment,
-                userId: data.userId,
-                // Ensure the date is correctly converted and formatted for the client
-                createdAt: data.createdAt ? data.createdAt.toDate().toISOString() : null,
+                createdAt: data.createdAt ? data.createdAt.toMillis() : null,
             };
         });
 
-        return NextResponse.json(reviews, { status: 200 });
+        // --- 2. Fetch User Names ---
+        const userIds = Array.from(new Set(reviews.map(r => r.userId)));
+        const userRefs = userIds.map(id => db.collection('users').doc(id));
 
-    } catch (error) {
-        // This logs the index requirement error until the index is built
+        // Fetch all user documents in a single batch
+        const userSnapshots = userRefs.length > 0 ? await db.getAll(...userRefs) : [];
+        const userMap = new Map();
+
+        userSnapshots.forEach(doc => {
+            if (doc.exists) {
+                // Store the name; fall back to a shortened ID if name isn't set in the 'users' collection
+                userMap.set(doc.id, doc.data()?.name || `User ${doc.id.substring(0, 5)}`);
+            }
+        });
+
+        // --- 3. Attach Name to Reviews ---
+        const reviewsWithNames = reviews.map(review => ({
+            ...review,
+            // Attach the full name to the review object
+            userName: userMap.get(review.userId) || `User ${review.userId.substring(0, 5)}...`,
+        }));
+
+        return NextResponse.json(reviewsWithNames, { status: 200 });
+
+    } catch (error: any) {
         console.error('API Error fetching reviews:', error);
-        return NextResponse.json({ message: 'Failed to fetch reviews data. Check Firebase Index.' }, { status: 500 });
+
+        // Handle missing index error (code 9)
+        if (error.code === 9) {
+            return NextResponse.json(
+                { message: 'Failed due to missing Firestore index.' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: 'Failed to fetch reviews data.' },
+            { status: 500 }
+        );
     }
 }
