@@ -17,13 +17,13 @@ type FormType = "sign-in" | "sign-up";
 const authFormSchema = (type: FormType) => {
     return z.object({
         name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
-        email: z.string().email(),
+        email: z.string(),
         password: z.string().min(3),
     });
 };
 import { Button } from "@/components/ui/button"
 import {Form} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+
 import Link from "next/link";
 import {toast} from "sonner";
 

@@ -49,64 +49,64 @@ const SubjectCard = async ({subjectId, subjectName, userId}: SubjectCardProps) =
 
     return (
         <>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 h-full
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 h-full
         flex flex-row justify-center items-center">
-            <div className="card-interview ">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="card-interview ">
+                    <div className="grid grid-cols-1 gap-6">
 
-                    <h3 className="mt-5 items-center capitalize">{subjectName}</h3>
+                        <h3 className="mt-5 items-center capitalize">{subjectName}</h3>
 
-                    {/* Display the calculated AVERAGE Rating */}
-                    <div className="flex flex-col gap-5 mt-3 justify-center items-center">
-                        <div className="flex  gap-2 items-center">
-                            <Image src="/star.svg" alt="star" width={22} height={22} />
+                        {/* Display the calculated AVERAGE Rating */}
+                        <div className="flex flex-col gap-5 mt-3 justify-center items-center">
+                            <div className="flex  gap-2 items-center">
+                                <Image src="/star.svg" alt="star" width={22} height={22} />
 
-                            {/* Display the AVERAGE RATING */}
-                            <p className="text-xl font-bold">{averageRatingDisplay}/5</p>
+                                {/* Display the AVERAGE RATING */}
+                                <p className="text-xl font-bold">{averageRatingDisplay}/5</p>
 
-                            {subjectAnalytics && (
-                                <span className="text-sm text-gray-500">({subjectAnalytics.totalSubmissions} votes)</span>
+                                {subjectAnalytics && (
+                                    <span className="text-sm text-gray-500">({subjectAnalytics.totalSubmissions} votes)</span>
+                                )}
+                            </div>
+
+                            <div className="flex  gap-2">
+                                {/* Link to the dedicated analytics page for charts */}
+                                <Button asChild className="btn-primary max-sm:w-full">
+                                    <Link href={`/analytics/${subjectId}`}>View Analytics</Link>
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-5 mt-20 ">
+                            {/* 1. Review Form */}
+                            {isUserLoggedInAndSubjectValid ? (
+                                <ReviewForm
+                                    subjectId={subjectId!}
+                                    userId={userId!}
+                                    // initialReview={userFeedback?.comment || ''} Pass initial review text for editing
+                                />
+                            ) : (
+                                <Button className="btn-primary max-sm:w-full" disabled>
+                                    Add Review (Sign In)
+                                </Button>
+                            )}
+
+                            {/* 2. Rating Dropdown */}
+                            {isUserLoggedInAndSubjectValid ? (
+                                <RatingDropdown
+                                    subjectId={subjectId!}
+                                    userId={userId!}
+                                />
+                            ) : (
+                                <Button className="btn-primary items-center max-sm:w-full" disabled>
+                                    Add Rating (Sign In)
+                                </Button>
                             )}
                         </div>
-
-                        <div className="flex  gap-2">
-                            {/* Link to the dedicated analytics page for charts */}
-                            <Button asChild className="btn-primary max-sm:w-full">
-                                <Link href={`/analytics/${subjectId}`}>View Analytics</Link>
-                            </Button>
-                        </div>
                     </div>
-
-                         <div className="flex flex-col gap-5 mt-20 ">
-                             {/* 1. Review Form */}
-                             {isUserLoggedInAndSubjectValid ? (
-                                 <ReviewForm
-                                     subjectId={subjectId!}
-                                     userId={userId!}
-                                     // initialReview={userFeedback?.comment || ''} Pass initial review text for editing
-                                 />
-                             ) : (
-                                 <Button className="btn-primary max-sm:w-full" disabled>
-                                     Add Review (Sign In)
-                                 </Button>
-                             )}
-
-                             {/* 2. Rating Dropdown */}
-                             {isUserLoggedInAndSubjectValid ? (
-                                 <RatingDropdown
-                                     subjectId={subjectId!}
-                                     userId={userId!}
-                                 />
-                             ) : (
-                                 <Button className="btn-primary items-center max-sm:w-full" disabled>
-                                     Add Rating (Sign In)
-                                 </Button>
-                             )}
-                         </div>
                 </div>
             </div>
-        </div>
-    </>
+        </>
     )
 }
 export default SubjectCard;

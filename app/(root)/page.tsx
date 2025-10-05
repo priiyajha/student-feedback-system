@@ -28,7 +28,7 @@ const Page = async () => {
                 </div>
                 <section className="flex flex-col gap-6 mt-8">
                     <h2>Your Subjects</h2>
-                    <div className="interviews-section">
+                    <div className="flex flex-wrap gap-4 max-lg:flex-col w-full items-stretch">
                         {/* 4. MAP OVER FETCHED SUBJECTS AND PASS USER ID */}
                         {subjects?.map((subject) => (
                             <SubjectCard
